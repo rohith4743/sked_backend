@@ -21,6 +21,11 @@ import com.rohithkankipati.projects.Sked.exception.SkedException;
 import com.rohithkankipati.projects.Sked.service.UserService;
 import com.rohithkankipati.projects.Sked.util.JwtTokenUtil;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/users")
@@ -33,46 +38,51 @@ public class UserController {
     private JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/api/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {
-	try {
-	    UserDTO user = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
-	    String token = jwtTokenUtil.generateToken(user);
-	    user.setJwtToken(token);
-	    return ResponseEntity.ok().body(user);
-	} catch (SkedException e) {
-	    throw e;
-	}
+    public ResponseEntity<?> login(@RequestBody @Valid LoginRequestDTO loginRequest) {
+		try {
+		    UserDTO user = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
+		    String token = jwtTokenUtil.generateToken(user);
+		    user.setJwtToken(token);
+		    return ResponseEntity.ok().body(user);
+		} catch (SkedException e) {
+		    throw e;
+		}
     }
 
     @PostMapping("/api/create")
-    public ResponseEntity<UserDTO> createAccount(@RequestBody UserDTO userDto) {
-	try {
-
-	    UserDTO createdUser = userService.createAccount(userDto);
-	    String token = jwtTokenUtil.generateToken(createdUser);
-	    createdUser.setJwtToken(token);
-	    return ResponseEntity.ok(createdUser);
-	} catch (SkedException e) {
-	    throw e;
-	}
+    public ResponseEntity<UserDTO> createAccount(@RequestBody @Valid UserDTO userDto) {
+		try {
+	
+		    UserDTO createdUser = userService.createAccount(userDto);
+		    String token = jwtTokenUtil.generateToken(createdUser);
+		    createdUser.setJwtToken(token);
+		    return ResponseEntity.ok(createdUser);
+		} catch (SkedException e) {
+		    throw e;
+		}
     }
 
     @GetMapping("/profile/{userName}")
-    public ResponseEntity<UserDTO> getProfile(@PathVariable String userName) {
+    public ResponseEntity<UserDTO> getProfile(@PathVariable @NotBlank(message = "username.required")
+    	@Size(min = 3, max = 255, message = "username.size")
+		@Pattern(regexp = "^[a-zA-Z0-9._-]{3,}$", message = "username.pattern") String userName) {
 
-	try {
-	    UserDTO createdUser = userService.getProfile(userName);
-	    return ResponseEntity.ok(createdUser);
-	} catch (SkedException e) {
-	    throw e;
-	}
+		try {
+		    UserDTO createdUser = userService.getProfile(userName);
+		    return ResponseEntity.ok(createdUser);
+		} catch (SkedException e) {
+		    throw e;
+		}
 
     }
 
     @GetMapping("/api/username-exists")
-    public ResponseEntity<?> checkUsernameExists(@RequestParam String username) {
-	boolean exists = userService.checkUsernameExists(username);
-	return ResponseEntity.ok().body("{\"exists\": " + exists + "}");
+	public ResponseEntity<?> checkUsernameExists(@RequestParam @NotBlank(message = "username.required")
+	    @Size(min = 3, max = 255, message = "username.size")
+		@Pattern(regexp = "^[a-zA-Z0-9._-]{3,}$", message = "username.pattern") String username) {
+		
+    	boolean exists = userService.checkUsernameExists(username);
+		return ResponseEntity.ok().body("{\"exists\": " + exists + "}");
     }
 
     @PostMapping("/change-password")

@@ -19,6 +19,7 @@ public class UserDTO {
 
     @NotBlank(message = "{username.required}")
     @Size(min = 3, max = 20, message = "{username.size}")
+    @Pattern(regexp = "^[a-zA-Z0-9._-]{3,}$", message = "username.pattern")
     private String userName;
 
     @NotBlank(message = "{firstname.required}")

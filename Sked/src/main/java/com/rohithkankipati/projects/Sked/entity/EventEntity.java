@@ -1,8 +1,11 @@
 package com.rohithkankipati.projects.Sked.entity;
 
-import java.util.Arrays;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.stream.Collectors;
+
+import com.rohithkankipati.projects.Sked.dto.EventDTO;
+import com.rohithkankipati.projects.Sked.dto.RepeatDTO;
 
 import jakarta.persistence.*;
 
@@ -32,11 +35,13 @@ public class EventEntity {
     @Column(name = "all_day")
     private Boolean allday;
 
-    @Column(name = "repeat_days")  // Store as a single string
-    private String repeat;
+    @Embedded
+    private RepeatEntity repeat;
+    
+    private Boolean isRepeat;
 
-    @Column(name = "username")
-    private String username;
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column(name = "category")
     private String category;
@@ -65,6 +70,14 @@ public class EventEntity {
 		this.description = description;
 	}
 
+	public Boolean getIsRepeat() {
+		return isRepeat;
+	}
+
+	public void setIsRepeat(Boolean isRepeat) {
+		this.isRepeat = isRepeat;
+	}
+
 	public Date getStart() {
 		return start;
 	}
@@ -89,20 +102,20 @@ public class EventEntity {
 		this.allday = allday;
 	}
 
-	public String[] getRepeat() {
-        return repeat != null ? repeat.split(",") : new String[0];
-    }
-
-    public void setRepeat(String[] repeat) {
-        this.repeat = repeat == null ? null : Arrays.stream(repeat).collect(Collectors.joining(","));
-    }
-
-	public String getUsername() {
-		return username;
+	public RepeatEntity getRepeat() {
+		return repeat;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setRepeat(RepeatEntity repeat) {
+		this.repeat = repeat;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 	public String getCategory() {
@@ -112,5 +125,39 @@ public class EventEntity {
 	public void setCategory(String category) {
 		this.category = category;
 	}
+	
+	
+	public void fromDTO(EventDTO dto) {
+        this.setName(dto.getName());
+        this.setDescription(dto.getDescription());
+        this.setStart(Date.from(dto.getStart().toInstant()));
+        this.setEnd(Date.from(dto.getEnd().toInstant()));
+        this.setAllday(dto.getAllday());
+        if (this.repeat == null) {
+            this.repeat = new RepeatEntity();
+        }
+        this.repeat.fromDTO(dto.getRepeat());
+        this.setCategory(dto.getCategory());
+        
+        RepeatDTO repeat = dto.getRepeat();
+		if(repeat.getFri() || repeat.getMon() || repeat.getSat() || repeat.getSun() || repeat.getThu() || repeat.getTue() || repeat.getWed()) {
+			this.setIsRepeat(true);
+		} else {
+			this.setIsRepeat(false);
+		}
+    }
+
+    public EventDTO toDTO() {
+        EventDTO dto = new EventDTO();
+        dto.setId(this.getId());
+        dto.setName(this.getName());
+        dto.setDescription(this.getDescription());
+        dto.setStart(ZonedDateTime.ofInstant(this.getStart().toInstant(), ZoneId.systemDefault()));
+        dto.setEnd(ZonedDateTime.ofInstant(this.getEnd().toInstant(), ZoneId.systemDefault()));
+        dto.setAllday(this.getAllday());
+        dto.setRepeat(this.repeat.toDTO());
+        dto.setCategory(this.getCategory());
+        return dto;
+    }
 
 }

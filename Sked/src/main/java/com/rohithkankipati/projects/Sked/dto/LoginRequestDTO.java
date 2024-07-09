@@ -6,13 +6,14 @@ import jakarta.validation.constraints.Size;
 
 public class LoginRequestDTO {
 	
-	@NotBlank(message = "Username/Email/Phone number cannot be empty")
-    @Size(min = 3, max = 255, message = "Username/Email/Phone number must be between 3 and 255 characters")
+	@NotBlank(message = "username.required")
+    @Size(min = 3, max = 255, message = "username.size")
+	@Pattern(regexp = "^[a-zA-Z0-9._-]{3,}$", message = "username.pattern")
     private String username;
 
-    @NotBlank(message = "Password cannot be empty")
-    @Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).*$", message = "Password must contain at least one digit, one lowercase letter, one uppercase letter, one special character, and must not contain spaces")
+    @NotBlank(message = "password.required")
+    @Size(min = 8, max = 100, message = "password.size")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).*$", message = "password.pattern")
     private String password;
 
     // Getters and setters
