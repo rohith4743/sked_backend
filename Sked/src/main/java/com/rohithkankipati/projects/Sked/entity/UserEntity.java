@@ -4,53 +4,55 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.rohithkankipati.projects.Sked.dto.UserDTO;
 import com.rohithkankipati.projects.Sked.model.UserRole;
 
-@Document(collection = "users")
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
 public class UserEntity {
 	
 	@Id
-    private String id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Indexed(unique = true)
+	@Column(unique = true)
     private String email;
 
-    @Field(name = "username")
-    @Indexed(unique = true)
+	@Column(name = "username", unique = true)
     private String userName;
 
-    @Field(name = "firstname")
+	@Column(name = "firstname")
     private String firstName;
 
-    @Field(name = "lastname")
+	@Column(name = "lastname")
     private String lastName;
 
     private String password;
 
+    @Column(name = "date_created")
     @CreatedDate
     private LocalDateTime dateCreated;
 
+    @Column(name = "last_modified", nullable = false)
     @LastModifiedDate
     private LocalDateTime lastModified;
 
-    @Field(name = "mobile")
-    @Indexed(unique = true)
+    @Column(name = "mobile", unique = true)
     private String mobileNumber;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
     private Set<UserRole> roles;
 
-    public String getId() {
+    public Long getId() {
 	return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
 	this.id = id;
     }
 
@@ -119,40 +121,40 @@ public class UserEntity {
     }
 
     public void fromUserDTO(UserDTO userDTO) {
-	this.id = userDTO.getId();
-	this.email = userDTO.getEmail();
-	this.userName = userDTO.getUserName();
-	this.firstName = userDTO.getFirstName();
-	this.lastName = userDTO.getLastName();
-	this.password = userDTO.getPassword();
-	this.roles = userDTO.getRoles();
-	this.mobileNumber = userDTO.getMobileNumber();
+		this.id = userDTO.getId();
+		this.email = userDTO.getEmail();
+		this.userName = userDTO.getUserName();
+		this.firstName = userDTO.getFirstName();
+		this.lastName = userDTO.getLastName();
+		this.password = userDTO.getPassword();
+		this.roles = userDTO.getRoles();
+		this.mobileNumber = userDTO.getMobileNumber();
     }
 
     public UserDTO toUserDTO() {
-	UserDTO userDTO = new UserDTO();
-	userDTO.setId(this.id);
-	userDTO.setEmail(this.email);
-	userDTO.setUserName(this.userName);
-	userDTO.setFirstName(this.firstName);
-	userDTO.setLastName(this.lastName);
-
-	userDTO.setRoles(this.roles);
-	userDTO.setMobileNumber(this.mobileNumber);
-	return userDTO;
+		UserDTO userDTO = new UserDTO();
+		userDTO.setId(this.id);
+		userDTO.setEmail(this.email);
+		userDTO.setUserName(this.userName);
+		userDTO.setFirstName(this.firstName);
+		userDTO.setLastName(this.lastName);
+	
+		userDTO.setRoles(this.roles);
+		userDTO.setMobileNumber(this.mobileNumber);
+		return userDTO;
     }
 
     public Set<UserRole> getRoles() {
-	return roles;
+    	return roles;
     }
 
     public void setRoles(Set<UserRole> roles) {
-	this.roles = roles;
+    	this.roles = roles;
     }
 
     @Override
     public String toString() {
-	return "UserEntity [id=" + id + ", email=" + email + ", userName=" + userName + ", firstName=" + firstName
+    	return "UserEntity [id=" + id + ", email=" + email + ", userName=" + userName + ", firstName=" + firstName
 		+ ", lastName=" + lastName + ", mobileNumber=" + mobileNumber + ", roles=" + roles + "]";
     }
 

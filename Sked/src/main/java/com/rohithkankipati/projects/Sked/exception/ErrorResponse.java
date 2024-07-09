@@ -40,5 +40,15 @@ public class ErrorResponse {
 	public void setTimestamp(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
 	}
+	
+	@Override
+	public String toString() {
+	    return "{"
+	            + "\"status\":" + status.value() + ","
+	            + "\"error\":\"" + status.getReasonPhrase() + "\","
+	            + "\"message\":\"" + message.replace("\"", "\\\"") + "\","
+	            + "\"timestamp\":\"" + timestamp.toString() + "\""
+	            + "}";
+	}
 
 }
