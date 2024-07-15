@@ -1,6 +1,8 @@
 package com.rohithkankipati.projects.Sked.service;
 
-import java.time.LocalDate;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.rohithkankipati.projects.Sked.dto.EventDTO;
+import com.rohithkankipati.projects.Sked.dto.RepeatDTO;
 import com.rohithkankipati.projects.Sked.entity.EventEntity;
 import com.rohithkankipati.projects.Sked.exception.SkedException;
 import com.rohithkankipati.projects.Sked.repository.EventRepository;
@@ -31,6 +34,13 @@ public class EventService {
 		
         if (eventDTO.getStart().isAfter(eventDTO.getEnd())) {
             throw new SkedException("event.service.startBeforeEnd", HttpStatus.BAD_REQUEST);
+        }
+        
+        RepeatDTO rep = eventDTO.getRepeat();
+        if (rep.getSun() || rep.getMon() || rep.getTue() || rep.getWed() || rep.getThu() || rep.getFri() || rep.getSat()) {
+        	if (Duration.between(eventDTO.getStart(), eventDTO.getEnd()).toHours() > 24) {
+        		throw new SkedException("event.service.recurringGreaterthan24Hours", HttpStatus.BAD_REQUEST);
+        	}
         }
 		
 		EventEntity eventEntity = new EventEntity();
@@ -83,34 +93,33 @@ public class EventService {
         return Map.of("message", "Event Deleted successfully");
     }
 	
-	public List<EventDTO> getEventsByDate(LocalDate date, Long userId) throws SkedException{
+	
+	public List<EventDTO> getEventsbyDate(ZonedDateTime date, Long userId) throws SkedException {
 		
 		try {
-			String day = date.getDayOfWeek().toString().substring(0, 3).toLowerCase();
-			List<EventEntity> events = null;
 			
+			ZonedDateTime startOfDay = date
+	                .with(ChronoField.HOUR_OF_DAY, 0)
+	                .with(ChronoField.MINUTE_OF_HOUR, 0)
+	                .with(ChronoField.SECOND_OF_MINUTE, 0)
+	                .with(ChronoField.MILLI_OF_SECOND, 0);
+	    
+	    	ZonedDateTime endOfDay = date
+	                .with(ChronoField.HOUR_OF_DAY, 23)
+	                .with(ChronoField.MINUTE_OF_HOUR, 59)
+	                .with(ChronoField.SECOND_OF_MINUTE, 59);
+	    	
+	    	List<EventEntity> events = eventRepository.findByUserIdandDate(userId, startOfDay, endOfDay).stream().filter(
+	    			event -> event.isEventOnDate(startOfDay, endOfDay)
+	    			).collect(Collectors.toList());
+	    	return events.stream().map(EventEntity::toDTO).collect(Collectors.toList());
+	    	
 			
-			switch (day) {
-				case "sun": events = eventRepository.findSundayEventsByUserIdAndDate(userId, date); break;
-				case "mon" : events = eventRepository.findMondayEventsByUserIdAndDate(userId, date);break;
-				case "tue": events = eventRepository.findTuesdayEventsByUserIdAndDate(userId, date);break;
-				case "wed" : events = eventRepository.findWednesdayEventsByUserIdAndDate(userId, date);break;
-				case "thu": events = eventRepository.findThursdayEventsByUserIdAndDate(userId, date);break;
-				case "fri" : events = eventRepository.findFridayEventsByUserIdAndDate(userId, date);break;
-				case "sat": events = eventRepository.findSaturdayEventsByUserIdAndDate(userId, date);break;
-					
-				default:
-					throw new IllegalArgumentException("Unexpected value: " + day);
-			}
-			
-			
-			List<EventEntity> nonRepeatEvents = eventRepository.findEventsByDateAndUserId(date, userId);
-			events.addAll(nonRepeatEvents);
-	        return events.stream().map(EventEntity::toDTO).collect(Collectors.toList());
 		} catch (Exception e) {
-			logger.error(e.getMessage());
-			throw new SkedException("event.service.getError", HttpStatus.BAD_REQUEST);
+			logger.error("Error retrieving events for date: " + date + " and userId: " + userId, e);
+	        throw new SkedException("event.service.getError", HttpStatus.BAD_REQUEST);
 		}
-    }
+		
+	}
 
 }

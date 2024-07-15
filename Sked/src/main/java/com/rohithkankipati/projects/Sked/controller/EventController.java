@@ -1,10 +1,15 @@
 package com.rohithkankipati.projects.Sked.controller;
 
-import java.time.LocalDate;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +27,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/event")
+@CrossOrigin
 public class EventController {
 	
 	@Autowired
@@ -30,6 +36,8 @@ public class EventController {
 	@PostMapping("/add")
 	public ResponseEntity<Map<String, Object>> addEvent(@RequestBody @Valid EventDTO eventDTO, @RequestHeader("X-User-ID") Long userId) {
 		try {
+			
+			
 			
 			Map<String, Object> response = eventService.addEvent(eventDTO, userId);
 			return ResponseEntity.created(null).body(response);
@@ -40,7 +48,7 @@ public class EventController {
 	}
 	
 	@PostMapping("/edit")
-    public ResponseEntity<Map<String, Object>> editEvent(@RequestBody @Valid EventDTO eventDTO, @RequestHeader("userId") Long userId) {
+    public ResponseEntity<Map<String, Object>> editEvent(@RequestBody @Valid EventDTO eventDTO, @RequestHeader("X-User-ID") Long userId) {
         
 		try {
 			Map<String, Object> response = eventService.editEvent(eventDTO, userId);
@@ -51,7 +59,7 @@ public class EventController {
     }
 	
 	@DeleteMapping("/delete/{eventId}")
-    public ResponseEntity<Map<String, Object>> deleteEvent(@PathVariable Long eventId, @RequestHeader("userId") Long userId) {
+    public ResponseEntity<Map<String, Object>> deleteEvent(@PathVariable Long eventId, @RequestHeader("X-User-ID") Long userId) {
 		
 		try {
 			Map<String, Object> response = eventService.deleteEvent(eventId, userId);
@@ -63,9 +71,12 @@ public class EventController {
     }
 
     @GetMapping("/get-by-date")
-    public ResponseEntity<?> getEventsByDate(@RequestParam LocalDate date, @RequestHeader("userId") Long userId) {
-        try {
-            var events = eventService.getEventsByDate(date, userId);
+    public ResponseEntity<?> getEventsByDate(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date, @RequestHeader("X-User-ID") Long userId) {
+        
+    	try {
+    		Instant instant = date.toInstant();
+            ZonedDateTime zoned = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+            var events = eventService.getEventsbyDate(zoned, userId);
             return ResponseEntity.ok(events);
         } catch (Exception e) {
         	throw e;

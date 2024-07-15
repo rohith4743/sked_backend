@@ -12,27 +12,31 @@ public class EventDTO {
 	
 	private Long id;
 	
-    @NotBlank(message = "event.name.empty")
-    @Size(max = 100, message = "event.name.large")
+    @NotBlank(message = "{event.name.empty}")
+    @Size(max = 100, message = "{event.name.large}")
 	private String name; 
 	
-    @Size(max = 500, message = "event.description.large")
+    @Size(max = 500, message = "{event.description.large}")
 	private String description;
 	
 	private String category;
 	
 	private Boolean allday;
 	
-	@Future(message = "event.start.future")
-    @NotNull(message = "event.start.empty")
+	@Future(message = "{event.start.future}")
+    @NotNull(message = "{event.start.empty}")
 	private ZonedDateTime start;
 	
-	@Future(message = "event.end.future")
-    @NotNull(message = "event.end.empty")
+	@Future(message = "{event.end.future}")
+    @NotNull(message = "{event.end.empty}")
 	private ZonedDateTime end;
 	
     @Valid
 	private RepeatDTO repeat;
+    
+    private Boolean repeatNever;
+    
+    private ZonedDateTime repeatEndDate;
 
 	public Long getId() {
 		return id;
@@ -97,5 +101,30 @@ public class EventDTO {
 	public void setRepeat(RepeatDTO repeat) {
 		this.repeat = repeat;
 	}
+
+	public Boolean getRepeatNever() {
+		return repeatNever;
+	}
+
+	public void setRepeatNever(Boolean repeatNever) {
+		this.repeatNever = repeatNever;
+	}
+
+	public ZonedDateTime getRepeatEndDate() {
+		return repeatEndDate;
+	}
+
+	public void setRepeatEndDate(ZonedDateTime repeatEndDate) {
+		this.repeatEndDate = repeatEndDate;
+	}
+
+	@Override
+	public String toString() {
+		return "EventDTO [id=" + id + ", name=" + name + ", description=" + description + ", category=" + category
+				+ ", allday=" + allday + ", start=" + start + ", end=" + end + ", repeat=" + repeat + ", repeatNever="
+				+ repeatNever + ", repeatEndDate=" + repeatEndDate + "]";
+	}
+	
+	
 	
 }

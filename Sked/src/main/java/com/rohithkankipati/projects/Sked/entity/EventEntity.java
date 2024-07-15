@@ -1,8 +1,7 @@
 package com.rohithkankipati.projects.Sked.entity;
 
-import java.time.ZoneId;
+import java.time.DayOfWeek;
 import java.time.ZonedDateTime;
-import java.util.Date;
 
 import com.rohithkankipati.projects.Sked.dto.EventDTO;
 import com.rohithkankipati.projects.Sked.dto.RepeatDTO;
@@ -26,11 +25,11 @@ public class EventEntity {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "start_date")
-    private Date start;
+    private ZonedDateTime start;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "end_date")
-    private Date end;
+    private ZonedDateTime end;
 
     @Column(name = "all_day")
     private Boolean allday;
@@ -45,6 +44,10 @@ public class EventEntity {
 
     @Column(name = "category")
     private String category;
+    
+    private Boolean repeatNever;
+    
+    private ZonedDateTime repeatEndDate;
 
 	public Long getId() {
 		return id;
@@ -78,19 +81,19 @@ public class EventEntity {
 		this.isRepeat = isRepeat;
 	}
 
-	public Date getStart() {
+	public ZonedDateTime getStart() {
 		return start;
 	}
 
-	public void setStart(Date start) {
+	public void setStart(ZonedDateTime start) {
 		this.start = start;
 	}
 
-	public Date getEnd() {
+	public ZonedDateTime getEnd() {
 		return end;
 	}
 
-	public void setEnd(Date end) {
+	public void setEnd(ZonedDateTime end) {
 		this.end = end;
 	}
 
@@ -126,18 +129,35 @@ public class EventEntity {
 		this.category = category;
 	}
 	
-	
+	public Boolean getRepeatNever() {
+		return repeatNever;
+	}
+
+	public void setRepeatNever(Boolean repeatNever) {
+		this.repeatNever = repeatNever;
+	}
+
+	public ZonedDateTime getRepeatEndDate() {
+		return repeatEndDate;
+	}
+
+	public void setRepeatEndDate(ZonedDateTime repeatEndDate) {
+		this.repeatEndDate = repeatEndDate;
+	}
+
 	public void fromDTO(EventDTO dto) {
         this.setName(dto.getName());
         this.setDescription(dto.getDescription());
-        this.setStart(Date.from(dto.getStart().toInstant()));
-        this.setEnd(Date.from(dto.getEnd().toInstant()));
+        this.setStart(dto.getStart());
+        this.setEnd(dto.getEnd());
         this.setAllday(dto.getAllday());
         if (this.repeat == null) {
             this.repeat = new RepeatEntity();
         }
         this.repeat.fromDTO(dto.getRepeat());
         this.setCategory(dto.getCategory());
+        this.setRepeatNever(dto.getRepeatNever());
+        this.setRepeatEndDate(dto.getRepeatEndDate());
         
         RepeatDTO repeat = dto.getRepeat();
 		if(repeat.getFri() || repeat.getMon() || repeat.getSat() || repeat.getSun() || repeat.getThu() || repeat.getTue() || repeat.getWed()) {
@@ -152,12 +172,83 @@ public class EventEntity {
         dto.setId(this.getId());
         dto.setName(this.getName());
         dto.setDescription(this.getDescription());
-        dto.setStart(ZonedDateTime.ofInstant(this.getStart().toInstant(), ZoneId.systemDefault()));
-        dto.setEnd(ZonedDateTime.ofInstant(this.getEnd().toInstant(), ZoneId.systemDefault()));
+        dto.setStart(this.getStart());
+        dto.setEnd(this.getEnd());
         dto.setAllday(this.getAllday());
         dto.setRepeat(this.repeat.toDTO());
         dto.setCategory(this.getCategory());
+        dto.setRepeatNever(this.repeatNever);
+        dto.setRepeatEndDate(this.repeatEndDate);
         return dto;
     }
+    
+    public boolean isEventOnDate(ZonedDateTime startOfDay, ZonedDateTime endOfDay) {
+        
+    	if (!this.isRepeat) {
+            
+            return this.start.isBefore(endOfDay) && this.end.isAfter(startOfDay);
+            
+        } else {
+            
+            if (this.repeatEndDate != null && this.repeatEndDate.isBefore(startOfDay)) {
+                return false;
+            }
+            
+         
+            
+            DayOfWeek dayOfWeek = startOfDay.getDayOfWeek();
+            
+
+            boolean isRepeatingOnCurrentDay = false;
+            switch (dayOfWeek) {
+                case SUNDAY: isRepeatingOnCurrentDay = this.getRepeat().getSun();break;
+                case MONDAY: isRepeatingOnCurrentDay = this.getRepeat().getMon();break;
+                case TUESDAY: isRepeatingOnCurrentDay = this.getRepeat().getTue();break;
+                case WEDNESDAY: isRepeatingOnCurrentDay = this.getRepeat().getWed();break;
+                case THURSDAY: isRepeatingOnCurrentDay = this.getRepeat().getThu();break;
+                case FRIDAY: isRepeatingOnCurrentDay = this.getRepeat().getFri();break;
+                case SATURDAY: isRepeatingOnCurrentDay = this.getRepeat().getSat();break;                
+            }
+            
+            if (isRepeatingOnCurrentDay) return true;
+            
+            DayOfWeek previousDayofWeek = startOfDay.minusDays(1).getDayOfWeek();
+            boolean isRepeatingOnPreviousDay = false;
+            switch (previousDayofWeek) {
+                case SUNDAY: isRepeatingOnCurrentDay = this.getRepeat().getSun();break;
+                case MONDAY: isRepeatingOnCurrentDay = this.getRepeat().getMon();break;
+                case TUESDAY: isRepeatingOnCurrentDay = this.getRepeat().getTue();break;
+                case WEDNESDAY: isRepeatingOnCurrentDay = this.getRepeat().getWed();break;
+                case THURSDAY: isRepeatingOnCurrentDay = this.getRepeat().getThu();break;
+                case FRIDAY: isRepeatingOnCurrentDay = this.getRepeat().getFri();break;
+                case SATURDAY: isRepeatingOnCurrentDay = this.getRepeat().getSat();break;                
+            }
+            
+            if(!start.toLocalDate().equals(end.toLocalDate()) && isRepeatingOnPreviousDay) return true;
+              
+        }
+
+         return false;
+        
+    }
+    
+    @Override
+    public String toString() {
+        return "EventEntity {" +
+                "\n\tid=" + id + 
+                ",\n\tname='" + name + '\'' +
+                ",\n\tstart=" + start +
+                ",\n\tend=" + end +
+                ",\n\tallday=" + allday +
+                ",\n\trepeat=" + repeat +
+                ",\n\tisRepeat=" + isRepeat +
+                ",\n\tuserId=" + userId +
+                ",\n\trepeatNever=" + repeatNever +
+                ",\n\trepeatEndDate=" + repeatEndDate +
+                "\n}";
+    }
+
+    
+    
 
 }

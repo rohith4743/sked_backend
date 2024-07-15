@@ -25,28 +25,29 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
 	
-	@ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception ex, WebRequest request) {
-		System.out.println(ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.BAD_REQUEST, 
-            ex.getLocalizedMessage()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
+	
 	
 	@ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgException(MethodArgumentNotValidException ex, WebRequest request) {
 		
 		List<String> errorMessages = ex.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
-                .map(MessageUtil::getMessage)
                 .collect(Collectors.toList());
 
 		String combinedErrorMessage = String.join(", ", errorMessages);
         ErrorResponse errorResponse = new ErrorResponse(
             HttpStatus.BAD_REQUEST, 
             combinedErrorMessage
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+	
+	@ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception ex, WebRequest request) {
+//		System.out.println(ex);
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.BAD_REQUEST, 
+            ex.getLocalizedMessage()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

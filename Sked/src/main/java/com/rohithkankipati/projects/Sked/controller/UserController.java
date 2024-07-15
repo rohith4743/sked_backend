@@ -46,6 +46,9 @@ public class UserController {
 		    return ResponseEntity.ok().body(user);
 		} catch (SkedException e) {
 		    throw e;
+		} catch (Exception e) {
+			System.out.println("here\n\n\n\n\n\n");
+			throw e;
 		}
     }
 

@@ -4,25 +4,25 @@ import jakarta.validation.constraints.NotNull;
 
 public class RepeatDTO {
 	
-	@NotNull(message = "event.day.unspecified")
+	@NotNull(message = "{event.day.unspecified}")
 	private Boolean mon;
 	
-    @NotNull(message = "event.day.unspecified")
+    @NotNull(message = "{event.day.unspecified}")
 	private Boolean tue;
 	
-    @NotNull(message = "event.day.unspecified")
+    @NotNull(message = "{event.day.unspecified}")
 	private Boolean wed;
 	
-    @NotNull(message = "event.day.unspecified")
+    @NotNull(message = "{event.day.unspecified}")
 	private Boolean thu;
 	
-    @NotNull(message = "event.day.unspecified")
+    @NotNull(message = "{event.day.unspecified}")
 	private Boolean fri;
 	
-    @NotNull(message = "event.day.unspecified")
+    @NotNull(message = "{event.day.unspecified}")
 	private Boolean sat;
 	
-    @NotNull(message = "event.day.unspecified")
+    @NotNull(message = "{event.day.unspecified}")
 	private Boolean sun;
 
 	public Boolean getMon() {

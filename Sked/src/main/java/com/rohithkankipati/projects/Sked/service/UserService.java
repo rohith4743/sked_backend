@@ -53,43 +53,43 @@ public class UserService {
 
     public UserDTO login(String identifier, String password) {
 
-	Optional<UserEntity> userOptional = userRepository.findByUsernameOrEmailOrPhoneNumber(identifier);
-
-	if (userOptional.isPresent() && passwordEncoder.matches(password, userOptional.get().getPassword())) {
-	    return userOptional.get().toUserDTO();
-	}
-	throw new SkedException("login.failed", HttpStatus.BAD_REQUEST);
+		Optional<UserEntity> userOptional = userRepository.findByUsernameOrEmailOrPhoneNumber(identifier);
+	
+		if (userOptional.isPresent() && passwordEncoder.matches(password, userOptional.get().getPassword())) {
+		    return userOptional.get().toUserDTO();
+		}
+		throw new SkedException("login.failed", HttpStatus.BAD_REQUEST);
     }
 
     public boolean checkUsernameExists(String username) {
-	return userRepository.existsByUserName(username);
+    	return userRepository.existsByUserName(username);
     }
 
     public boolean changePassword(String userId, String oldPassword, String newPassword) {
-	return false;
+    	return false;
     }
 
     public boolean forgetPassword(String email) {
-	return false;
+    	return false;
     }
 
     public UserDTO getProfile(String userName) {
 
-	Optional<UserEntity> userOptional = userRepository.findByUserName(userName);
-	if (userOptional.isPresent()) {
-	    UserEntity userEntity = userOptional.get();
-	    UserDTO userDTO = new UserDTO();
-	    userDTO.setEmail(userEntity.getEmail());
-	    userDTO.setFirstName(userEntity.getFirstName());
-	    userDTO.setLastName(userEntity.getLastName());
-	    userDTO.setMobileNumber(userEntity.getMobileNumber());
-	    userDTO.setUserName(userName);
-	    return userDTO;
-	}
-	throw new SkedException("profile.not_found", HttpStatus.BAD_REQUEST);
+		Optional<UserEntity> userOptional = userRepository.findByUserName(userName);
+		if (userOptional.isPresent()) {
+		    UserEntity userEntity = userOptional.get();
+		    UserDTO userDTO = new UserDTO();
+		    userDTO.setEmail(userEntity.getEmail());
+		    userDTO.setFirstName(userEntity.getFirstName());
+		    userDTO.setLastName(userEntity.getLastName());
+		    userDTO.setMobileNumber(userEntity.getMobileNumber());
+		    userDTO.setUserName(userName);
+		    return userDTO;
+		}
+			throw new SkedException("profile.not_found", HttpStatus.BAD_REQUEST);
     }
 
     public boolean logout(String userId) {
-	return false;
+    	return false;
     }
 }

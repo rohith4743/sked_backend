@@ -23,7 +23,7 @@ public class SecurityConfig {
 		.csrf(csrf -> csrf.disable()) // Adjusted for hypothetical new CSRF configuration
 		.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-	return http.build();
+		return http.build();
     }
 
     @Bean

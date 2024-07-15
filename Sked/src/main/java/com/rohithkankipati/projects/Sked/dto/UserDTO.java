@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class UserDTO {
+	
 	private Long id;
 
     @NotBlank(message = "{email.required}")
