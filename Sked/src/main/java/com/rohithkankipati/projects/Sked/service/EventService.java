@@ -92,6 +92,8 @@ public class EventService {
 		EventEntity event = optional.orElseThrow(() -> new SkedException("event.service.notFound", HttpStatus.NOT_FOUND));
         
         try {
+        	
+        	exemptionRepository.deleteByEventId(eventId);
             eventRepository.delete(event);
         } catch (Exception e) {
             logger.error("Error deleting event: " + e.getMessage(), e);
