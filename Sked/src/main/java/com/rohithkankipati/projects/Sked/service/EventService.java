@@ -3,6 +3,7 @@ package com.rohithkankipati.projects.Sked.service;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,9 @@ import org.springframework.stereotype.Service;
 import com.rohithkankipati.projects.Sked.dto.EventDTO;
 import com.rohithkankipati.projects.Sked.dto.RepeatDTO;
 import com.rohithkankipati.projects.Sked.entity.EventEntity;
+import com.rohithkankipati.projects.Sked.entity.EventExemptionEntity;
 import com.rohithkankipati.projects.Sked.exception.SkedException;
+import com.rohithkankipati.projects.Sked.repository.EventExemptionRepository;
 import com.rohithkankipati.projects.Sked.repository.EventRepository;
 
 @Service
@@ -25,6 +28,9 @@ public class EventService {
 	
 	@Autowired
 	private EventRepository eventRepository;
+	
+	@Autowired
+	private EventExemptionRepository exemptionRepository;
 	
 	@Autowired
 	private Logger logger;
@@ -62,8 +68,10 @@ public class EventService {
 		return response;
 	}
 	
-	public Map<String, Object> editEvent(EventDTO eventDTO, Long userId) throws SkedException {
-        Optional<EventEntity> optional = eventRepository.findByIdAndUserId(eventDTO.getId(), userId);
+	public Map<String, Object> editEvent(EventDTO eventDTO, Long userId, Long eventId) throws SkedException {
+        
+		
+		Optional<EventEntity> optional = eventRepository.findByIdAndUserId(eventId, userId);
         EventEntity existingEvent = optional.orElseThrow(() -> new SkedException("event.service.notFound", HttpStatus.NOT_FOUND));
         
         existingEvent.fromDTO(eventDTO);
@@ -93,6 +101,25 @@ public class EventService {
         return Map.of("message", "Event Deleted successfully");
     }
 	
+	public Map<String, Object> deleteEventFromRecurring(Long userId, Long eventId, ZonedDateTime date) throws SkedException {
+		
+		Optional<EventEntity> optional = eventRepository.findByIdAndUserId(eventId, userId);
+		EventEntity event = optional.orElseThrow(() -> new SkedException("event.service.notFound", HttpStatus.NOT_FOUND));
+		
+		EventExemptionEntity exemption = new EventExemptionEntity();
+		exemption.setDate(date);
+		exemption.setEvent(event);
+		
+		try {
+			exemptionRepository.save(exemption);	
+		} catch (Exception e) {
+            logger.error("Error deleting event: " + e.getMessage(), e);
+            throw new SkedException("event.service.notDeleted", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+		
+		return Map.of("message", "Event Deleted successfully");
+	}
+	
 	
 	public List<EventDTO> getEventsbyDate(ZonedDateTime date, Long userId) throws SkedException {
 		
@@ -112,7 +139,43 @@ public class EventService {
 	    	List<EventEntity> events = eventRepository.findByUserIdandDate(userId, startOfDay, endOfDay).stream().filter(
 	    			event -> event.isEventOnDate(startOfDay, endOfDay)
 	    			).collect(Collectors.toList());
-	    	return events.stream().map(EventEntity::toDTO).collect(Collectors.toList());
+
+	    	
+	    	List<EventDTO> eventDTOs = new ArrayList<>();
+	    	
+	    	for (EventEntity eventEntity : events) {
+	    		
+				List<EventExemptionEntity> exemptions = exemptionRepository.findByEventId(eventEntity.getId());
+			
+				if(exemptions.size() == 0) {
+					eventDTOs.add(eventEntity.toDTO());
+				} else if(eventEntity.getStart().toLocalDate().equals(eventEntity.getEnd().toLocalDate())) {
+					
+					Boolean found = true;
+					for (EventExemptionEntity exempt : exemptions) {
+						
+						if(exempt.getDate().toLocalDate().equals(startOfDay.toLocalDate())) {
+							found = false;
+						}
+						
+					}
+					if(found) eventDTOs.add(eventEntity.toDTO());
+					
+				} else {
+					Boolean found = true;
+					for (EventExemptionEntity exempt : exemptions) {
+						
+						if(exempt.getDate().toLocalDate().equals(startOfDay.minusDays(1).toLocalDate())) {
+							found = false;
+						}
+						
+					}
+					if (found) eventDTOs.add(eventEntity.toDTO());
+				}
+				
+			}
+	    	
+	    	return eventDTOs;
 	    	
 			
 		} catch (Exception e) {

@@ -23,7 +23,6 @@ public class EventDTO {
 	
 	private Boolean allday;
 	
-	@Future(message = "{event.start.future}")
     @NotNull(message = "{event.start.empty}")
 	private ZonedDateTime start;
 	

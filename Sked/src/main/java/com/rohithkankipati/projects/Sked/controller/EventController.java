@@ -47,11 +47,11 @@ public class EventController {
 		}
 	}
 	
-	@PostMapping("/edit")
-    public ResponseEntity<Map<String, Object>> editEvent(@RequestBody @Valid EventDTO eventDTO, @RequestHeader("X-User-ID") Long userId) {
+	@PostMapping("/edit/{eventId}")
+    public ResponseEntity<Map<String, Object>> editEvent(@PathVariable Long eventId, @RequestBody @Valid EventDTO eventDTO, @RequestHeader("X-User-ID") Long userId) {
         
 		try {
-			Map<String, Object> response = eventService.editEvent(eventDTO, userId);
+			Map<String, Object> response = eventService.editEvent(eventDTO, userId, eventId);
 	        return ResponseEntity.ok(response);
 		} catch(Exception e) {
 			throw e;
@@ -63,6 +63,20 @@ public class EventController {
 		
 		try {
 			Map<String, Object> response = eventService.deleteEvent(eventId, userId);
+	        return ResponseEntity.ok(response);
+		} catch(Exception e) {
+			throw e;
+		}
+        
+    }
+	
+	@DeleteMapping("/delete/{eventId}/{date}")
+    public ResponseEntity<Map<String, Object>> deleteEventFromRecurring(@PathVariable Long eventId, @RequestHeader("X-User-ID") Long userId, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
+		
+		try {
+			Instant instant = date.toInstant();
+            ZonedDateTime zoned = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+			Map<String, Object> response = eventService.deleteEventFromRecurring(userId, eventId, zoned);
 	        return ResponseEntity.ok(response);
 		} catch(Exception e) {
 			throw e;

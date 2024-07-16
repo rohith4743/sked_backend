@@ -190,7 +190,7 @@ public class EventEntity {
             
         } else {
             
-            if (this.repeatEndDate != null && this.repeatEndDate.isBefore(startOfDay)) {
+            if (this.repeatEndDate != null && this.repeatEndDate.isBefore(startOfDay) && this.repeatNever == false) {
                 return false;
             }
             
